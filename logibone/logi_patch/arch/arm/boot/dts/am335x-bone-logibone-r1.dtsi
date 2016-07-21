@@ -1,0 +1,130 @@
+/*
+ * Copyright (C) 2012 Texas Instruments Incorporated - http://www.ti.com/
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation.
+*/
+
+
+&gpio1 {
+	emmc_rst {
+		gpio-hog;
+		gpios = <20 0>;
+		output-high;
+		line-name = "EMMC ResetN";
+	};
+};
+
+&spi1 {
+	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&spi1_pins>;
+
+	spidev0: spidev@0 {
+		compatible = "spidev";
+		reg = <0>;
+		spi-max-frequency = <24000000>;
+		spi-cpha;
+	};
+
+	spidev1: spidev@1 {
+		compatible = "spidev";
+		reg = <1>;
+		spi-max-frequency = <24000000>;
+	};
+};
+
+
+&i2c1 {
+        pinctrl-names = "default";
+        pinctrl-0 = <&i2c1_pins>;
+
+        status = "okay";
+        clock-frequency = <100000>;
+
+	pca9534@24 {
+		compatible = "pca9534";
+		reg = <0x24>;
+        };
+};
+
+
+&gpmc{
+depth = <1>;	/* only create devices on depth 1 */
+
+/* stupid warnings */
+#address-cells = <1>;
+#size-cells = <1>;
+
+/*__overlay__ { */
+
+	status = "okay";
+
+	#address-cells = <2>;
+	#size-cells = <1>;
+
+	pinctrl-names = "default";
+	pinctrl-0 = <&gpmc_pins>;
+
+	/* chip select ranges */
+	ranges = <1 0 0x01000000 0x1000000>;
+
+	nor {
+		compatible = "logibone_ra1";
+		status = "okay";
+		pinctrl-names = "default";
+
+		/*reset = <&rstctl 0 0>;*/  /* uncomment for use under Kernel 3.8.13 */
+		/*reset-names = "eMMC_RSTn-LOGIBONE";*/ /* uncomment for use under Kernel 3.8.13 */
+
+		reg = <1 0 0x01000000>;			/*CSn1*/
+
+		/* CONFIG1 */
+		bank-width = <2>;			/* GPMC_CONFIG1_DEVICESIZE(1) */
+		/*gpmc,burst-write;*/
+		/*gpmc,burst-read;*/
+		/*gpmc,burst-wrap;*/
+		gpmc,sync-read;				/* GPMC_CONFIG1_READTYPE_ASYNC */
+		gpmc,sync-write;			/* GPMC_CONFIG1_WRITETYPE_ASYNC */
+		gpmc,clk-activation-ns = <0>;		/* GPMC_CONFIG1_CLKACTIVATIONTIME(2) */
+		gpmc,burst-length = <16>;		/* GPMC_CONFIG1_PAGE_LEN(2) */
+		gpmc,mux-add-data = <2>;		/* GPMC_CONFIG1_MUXTYPE(2) */
+
+		/* CONFIG2 */
+		gpmc,sync-clk-ps = <10000>; //<20000>;
+		gpmc,cs-on-ns = <0>;
+		gpmc,cs-rd-off-ns = <120>; //<100>;
+		gpmc,cs-wr-off-ns = <80>; //<40>;
+
+		/* CONFIG3 */
+		gpmc,adv-on-ns = <30>; //<0>;
+		gpmc,adv-rd-off-ns = <40>; //<20>;
+		gpmc,adv-wr-off-ns = <40>; //<20>;
+
+		/* CONFIG4 */
+		gpmc,oe-on-ns = <60>; //<20>;
+		gpmc,oe-off-ns = <110>; //<100>;
+		gpmc,we-on-ns = <50>; //<20>;
+		gpmc,we-off-ns = <70>; //<40>;
+
+		/* CONFIG 5 */
+		gpmc,page-burst-access-ns = <10>;//<20>;
+		gpmc,access-ns = <100>; //<80>;
+		gpmc,rd-cycle-ns = <120>;
+		gpmc,wr-cycle-ns = <80>;
+
+		/* CONFIG 6 */
+		gpmc,wr-access-ns = <60>; //<40>;
+		gpmc,wr-data-mux-bus-ns = <40>;//<20>;
+		/*gpmc,bus-turnaround-ns = <40>;*/	/* CONFIG6:3:0 = 4 */
+		/*gpmc,cycle2cycle-samecsen;*/		/* CONFIG6:7 = 1 */
+		/*gpmc,cycle2cycle-delay-ns = <40>;*/	/* CONFIG6:11:8 = 4 */
+
+		/* not using dma engine yet, but we can get the channel number here */
+		dmas = <&edma 20>;
+		dma-names = "logibone";
+
+	};
+};
+

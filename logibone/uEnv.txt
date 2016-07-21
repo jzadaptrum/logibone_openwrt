@@ -1,0 +1,17 @@
+kernel_file=openwrt-omap-zImage
+fdtfile=am335x-bone-logibone-r1.dtb
+
+loadzimage=load mmc ${mmcdev}:${mmcpart} ${loadaddr} ${kernel_file}
+loadfdt=load mmc ${mmcdev}:${mmcpart} ${fdtaddr} ${fdtfile}
+
+console=ttyO0,115200n8
+optargs="debug init=/etc/preinit"
+
+mmcroot=/dev/mmcblk0 rw
+mmcrootfstype=ext4 rootwait
+rootfstype=${mmcrootfstype} ${optargs}
+
+mmcargs=setenv bootargs console=${console} root=${mmcroot} ${mmcrootfstype} verbose debug
+
+uenvcmd=run loadzimage; run loadfdt; run mmcargs; bootz ${loadaddr} - ${fdtaddr}
+

@@ -1,0 +1,1 @@
+cmd_drivers/misc/cape_logibone/logibone_r1_dma.o := arm-openwrt-linux-uclibcgnueabi-ld -EL    -r -o drivers/misc/cape_logibone/logibone_r1_dma.o drivers/misc/cape_logibone/main_dma.o drivers/misc/cape_logibone/logi_dma.o drivers/misc/cape_logibone/ioctl.o 
